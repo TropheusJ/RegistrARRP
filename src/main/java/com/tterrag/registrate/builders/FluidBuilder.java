@@ -3,20 +3,16 @@ package com.tterrag.registrate.builders;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
-import com.tterrag.registrate.util.FluidAttributes;
-import com.tterrag.registrate.util.nullness.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.Block;
@@ -40,6 +36,10 @@ import com.tterrag.registrate.fabric.SimpleFluidRenderHandler;
 import com.tterrag.registrate.util.NonNullLazyValue;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
+import com.tterrag.registrate.util.nullness.NonNullBiFunction;
+import com.tterrag.registrate.util.nullness.NonNullConsumer;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 /**
  * A builder for fluids, allows for customization of the {@link SimpleFlowableFluid.Properties} and {@link FluidAttributes}, and creation of the source variant, fluid block, and bucket item, as well as
@@ -51,7 +51,14 @@ import com.tterrag.registrate.util.entry.RegistryEntry;
  *            Parent object type
  */
 public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuilder<Fluid, T, P, FluidBuilder<T, P>> {
-	
+    
+//    private static class Builder extends FluidAttributes.Builder {
+//        
+//        protected Builder(Identifier still, Identifier flowing, BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
+//            super(still, flowing, attributesFactory);
+//        }
+//    }
+
     /**
      * Create a new {@link FluidBuilder} and configure data. The created builder will use the default attributes class ({@link FluidAttributes}) and fluid class ({@link SimpleFlowableFluid.Flowing}).
      * 
@@ -72,9 +79,9 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      * @see #create(AbstractRegistrate, Object, String, BuilderCallback, Identifier, Identifier, NonNullBiFunction, NonNullFunction)
      */
-    public static <P> FluidBuilder<SimpleFlowableFluid.Flowing, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, Identifier stillTexture, Identifier flowingTexture) {
-        return create(owner, parent, name, callback, stillTexture, flowingTexture, (NonNullBiFunction<FluidAttributes, Fluid, FluidAttributes>) null);
-    }
+//    public static <P> FluidBuilder<SimpleFlowableFluid.Flowing, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, Identifier stillTexture, Identifier flowingTexture) {
+//        return create(owner, parent, name, callback, stillTexture, flowingTexture/*, (NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes>) null*/);
+//    }
     
     /**
      * Create a new {@link FluidBuilder} and configure data. The created builder will use the default fluid class ({@link SimpleFlowableFluid.Flowing}).
@@ -98,9 +105,9 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      * @see #create(AbstractRegistrate, Object, String, BuilderCallback, Identifier, Identifier, NonNullBiFunction, NonNullFunction)
      */
-    public static <P> FluidBuilder<SimpleFlowableFluid.Flowing, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, Identifier stillTexture, Identifier flowingTexture,
-            @Nullable NonNullBiFunction<FluidAttributes, Fluid, FluidAttributes> attributesFactory) {
-        return create(owner, parent, name, callback, stillTexture, flowingTexture, attributesFactory, SimpleFlowableFluid.Flowing::new);
+    public static <P> FluidBuilder<SimpleFlowableFluid.Flowing, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, Identifier stillTexture, Identifier flowingTexture/*,
+            @Nullable NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory*/) {
+        return create(owner, parent, name, callback, stillTexture, flowingTexture, /*attributesFactory,*/ SimpleFlowableFluid.Flowing::new);
     }
     
     /**
@@ -127,10 +134,10 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      * @see #create(AbstractRegistrate, Object, String, BuilderCallback, Identifier, Identifier, NonNullBiFunction, NonNullFunction)
      */
-    public static <T extends SimpleFlowableFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, Identifier stillTexture, Identifier flowingTexture,
-            NonNullFunction<SimpleFlowableFluid.Properties, T> factory) {
-        return create(owner, parent, name, callback, stillTexture, flowingTexture, null, factory);
-    }
+//    public static <T extends SimpleFlowableFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, Identifier stillTexture, Identifier flowingTexture,
+//            NonNullFunction<SimpleFlowableFluid.Properties, T> factory) {
+//        return create(owner, parent, name, callback, stillTexture, flowingTexture, /*null,*/ factory);
+//    }
     
     /**
      * Create a new {@link FluidBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
@@ -167,8 +174,8 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      */
     public static <T extends SimpleFlowableFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, Identifier stillTexture, Identifier flowingTexture,
-            @Nullable NonNullBiFunction<FluidAttributes, Fluid, FluidAttributes> attributesFactory, NonNullFunction<SimpleFlowableFluid.Properties, T> factory) {
-        FluidBuilder<T, P> ret = new FluidBuilder<>(owner, parent, name, callback, stillTexture, flowingTexture, attributesFactory, factory)
+            /*@Nullable NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory,*/ NonNullFunction<SimpleFlowableFluid.Properties, T> factory) {
+        FluidBuilder<T, P> ret = new FluidBuilder<>(owner, parent, name, callback, stillTexture, flowingTexture, /*attributesFactory,*/ factory)
                 .defaultLang().defaultSource().defaultBlock().defaultBucket()
                 .tag(FluidTags.WATER);
 
@@ -179,26 +186,26 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
     private final Identifier flowingTexture;
     private final String sourceName;
     private final String bucketName;
-    private final NonNullSupplier<FluidAttributes> attributes;
+//    private final NonNullSupplier<FluidAttributes.Builder> attributes;
     private final NonNullFunction<SimpleFlowableFluid.Properties, T> factory;
 
     @Nullable
     private Boolean defaultSource, defaultBlock, defaultBucket;
 
-    private NonNullConsumer<FluidAttributes> attributesCallback = $ -> {};
+//    private NonNullConsumer<FluidAttributes.Builder> attributesCallback = $ -> {};
     private NonNullConsumer<SimpleFlowableFluid.Properties> properties;
     @Nullable
     private NonNullLazyValue<? extends SimpleFlowableFluid> source;
     private List<Identified<Fluid>> tags = new ArrayList<>();
 
     protected FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, Identifier stillTexture, Identifier flowingTexture,
-						   @Nullable BiFunction<FluidAttributes, Fluid, FluidAttributes> attributesFactory, NonNullFunction<SimpleFlowableFluid.Properties, T> factory) {
+            /*@Nullable BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory,*/ NonNullFunction<SimpleFlowableFluid.Properties, T> factory) {
         super(owner, parent, "flowing_" + name, callback, Fluid.class);
         this.stillTexture = stillTexture;
         this.flowingTexture = flowingTexture;
         this.sourceName = name;
         this.bucketName = name + "_bucket";
-        this.attributes = () -> new FluidAttributes().stillTexture(stillTexture).flowingTexture(flowingTexture);
+//        this.attributes = () -> attributesFactory == null ? FluidAttributes.builder(stillTexture, flowingTexture) : new Builder(stillTexture, flowingTexture, attributesFactory);
         this.factory = factory;
         
         String bucketName = this.bucketName;
@@ -214,10 +221,10 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
      *            The action to perform on the attributes
      * @return this {@link FluidBuilder}
      */
-    public FluidBuilder<T, P> attributes(NonNullConsumer<FluidAttributes> cons) {
-        attributesCallback = attributesCallback.andThen(cons);
-        return this;
-    }
+//    public FluidBuilder<T, P> attributes(NonNullConsumer<FluidAttributes.Builder> cons) {
+//        attributesCallback = attributesCallback.andThen(cons);
+//        return this;
+//    }
     
     /**
      * Modify the properties of the fluid. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
@@ -233,7 +240,6 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
     }
 
     /**
-	 * Does not work currently.
      * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}. This is the default, so it is generally not necessary to call, unless for
      * undoing previous changes.
      * 
@@ -244,7 +250,6 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
     }
 
     /**
-	 * Does not work currently.
      * Set the translation for this fluid.
      * 
      * @param name
@@ -310,7 +315,6 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
     }
 
     /**
-	 * Does not work currently.
      * Create a {@link FluidBlock} for this fluid, which is created by the given factory, and return the builder for it so that further customization can be done.
      * 
      * @param <B>
@@ -328,7 +332,7 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
         return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier, p))
                 .properties(p -> FabricBlockSettings.copyOf(Blocks.WATER).dropsNothing())
 //                .properties(p -> {
-                    // TODO is this ok?
+//                    // TODO is this ok?
 //                    FluidAttributes attrs = this.attributes.get().build(Fluids.WATER);
 //                    return p.lightLevel($ -> attrs.getLuminosity());
 //                })
@@ -377,7 +381,6 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
     }
 
     /**
-	 * Does not work currently.
      * Create a {@link BucketItem} for this fluid, which is created by the given factory, and return the builder for it so that further customization can be done.
      * 
      * @param <I>
@@ -406,7 +409,6 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
     }
 
     /**
-	 * Does not work currently.
      * Assign {@link Identified}{@code s} to this fluid and its source fluid. Multiple calls will add additional tags.
      * 
      * @param tags
@@ -425,7 +427,6 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
     }
 
     /**
-	 * Does not work currently.
      * Remove {@link Identified}{@code s} from this fluid and its source fluid. Multiple calls will remove additional tags.
      * 
      * @param tags
@@ -443,24 +444,21 @@ public class FluidBuilder<T extends SimpleFlowableFluid, P> extends AbstractBuil
         Preconditions.checkNotNull(source, "Fluid has no source block: " + sourceName);
         return source.get();
     }
-	
-	/**
-	 * Does not work currently.
-	 */
-	private SimpleFlowableFluid.Properties makeProperties() {
-        FluidAttributes attributes = this.attributes.get();
+    
+    private SimpleFlowableFluid.Properties makeProperties() {
+//        FluidAttributes.Builder attributes = this.attributes.get();
         RegistryEntry<Block> block = getOwner().getOptional(sourceName, Block.class);
-        attributesCallback.accept(attributes);
+//        attributesCallback.accept(attributes);
         // Force the translation key after the user callback runs
         // This is done because we need to remove the lang data generator if using the block key,
         // and if it was possible to undo this change, it might result in the user translation getting
         // silently lost, as there's no good way to check whether the translation key was changed.
         // TODO improve this?
         if (block.isPresent()) {
-            attributes.translationKey(block.get().getTranslationKey());
+//            attributes.translationKey(block.get().getTranslationKey());
 //            setData(ProviderType.LANG, NonNullBiConsumer.noop());
         } else {
-            attributes.translationKey(Util.createTranslationKey("fluid", new Identifier(getOwner().getModid(), sourceName)));
+//            attributes.translationKey(Util.createTranslationKey("fluid", new Identifier(getOwner().getModid(), sourceName)));
         }
         SimpleFlowableFluid.Properties ret = new SimpleFlowableFluid.Properties(source, asSupplier()/*, attributes*/);
         properties.accept(ret);
