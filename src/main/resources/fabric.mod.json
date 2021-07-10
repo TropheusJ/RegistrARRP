@@ -1,35 +1,39 @@
 {
   "schemaVersion": 1,
-  "id": "registrate",
+  "id": "registrarrp",
   "version": "${version}",
 
-  "name": "Registrate for Fabric",
-  "description": "Fabric port of Registrate. Helper library to make creating and registering objects simpler.",
+  "name": "RegistrARRP",
+  "description": "A fork of Registrate for Fabric, which allows for easy registration and data generation.",
   "authors": [
     "tterrag1098",
-	"Pepper_Bell"
+	"Pepper_Bell",
+    "Tropheus Jay"
   ],
   "contact": {
     "sources": "https://github.com/PepperCode1/Registrate-Fabric"
   },
 
   "license": "MPL-2.0",
-  "icon": "assets/registrate/icon.png",
+  "icon": "assets/registrarrp/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "client": [
-      "com.tterrag.registrate.fabric.ClientInit"
+      "com.tterrag.registrarrp.fabric.ClientInit"
+    ],
+    "main": [
+      "com.tterrag.registrarrp.fabric.Init"
     ]
   },
   "mixins": [
-    "registrate.mixins.json"
+    "registrarrp.mixins.json"
   ],
 
   "depends": {
     "fabricloader": ">=0.7.4",
     "fabric": "*",
-    "minecraft": "1.16.x"
+    "minecraft": ">=1.16"
   },
 
   "custom": {
