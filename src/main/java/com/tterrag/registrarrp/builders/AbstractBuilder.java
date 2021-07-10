@@ -3,6 +3,7 @@ package com.tterrag.registrarrp.builders;
 import com.tterrag.registrarrp.AbstractRegistrate;
 import com.tterrag.registrarrp.fabric.RegistryObject;
 import com.tterrag.registrarrp.fabric.RegistryUtil;
+import com.tterrag.registrarrp.util.Utils;
 import com.tterrag.registrarrp.util.entry.LazyRegistryEntry;
 import com.tterrag.registrarrp.util.entry.RegistryEntry;
 import com.tterrag.registrarrp.util.nullness.NonNullSupplier;
@@ -106,7 +107,7 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
      */
     public S defaultLang() {
         return lang("en_us", Util.createTranslationKey(RegistryUtil.getRegistry(getRegistryType()).getKey().getValue().getPath(),
-                new Identifier(getOwner().getModid(), getName())), name);
+                new Identifier(getOwner().getModid(), getName())), Utils.toEnglishName(getName()));
     }
     
     /**

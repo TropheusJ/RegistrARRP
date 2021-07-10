@@ -20,10 +20,10 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "com.tterrag.registrarrp.fabric.ClientInit"
+      "com.tterrag.registrarrp.fabric.RegistrARRPClient"
     ],
     "main": [
-      "com.tterrag.registrarrp.fabric.Init"
+      "com.tterrag.registrarrp.fabric.RegistrARRP"
     ]
   },
   "mixins": [

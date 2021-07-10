@@ -1,5 +1,6 @@
 package com.tterrag.registrarrp;
 
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -9,6 +10,8 @@ import java.util.stream.Collectors;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
+import com.tterrag.registrarrp.builders.*;
+import com.tterrag.registrarrp.fabric.RegistrARRP;
 import net.devtech.arrp.api.RRPCallback;
 import net.devtech.arrp.api.RuntimeResourcePack;
 import net.devtech.arrp.json.lang.JLang;
@@ -41,20 +44,10 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.registry.Registry;
 
-import com.tterrag.registrarrp.builders.BlockBuilder;
-import com.tterrag.registrarrp.builders.Builder;
-import com.tterrag.registrarrp.builders.BuilderCallback;
-import com.tterrag.registrarrp.builders.ContainerBuilder;
 import com.tterrag.registrarrp.builders.ContainerBuilder.ContainerFactory;
 import com.tterrag.registrarrp.builders.ContainerBuilder.ForgeContainerFactory;
 import com.tterrag.registrarrp.builders.ContainerBuilder.ScreenFactory;
-import com.tterrag.registrarrp.builders.EnchantmentBuilder;
 import com.tterrag.registrarrp.builders.EnchantmentBuilder.EnchantmentFactory;
-import com.tterrag.registrarrp.builders.EntityBuilder;
-import com.tterrag.registrarrp.builders.FluidBuilder;
-import com.tterrag.registrarrp.builders.ItemBuilder;
-import com.tterrag.registrarrp.builders.NoConfigBuilder;
-import com.tterrag.registrarrp.builders.TileEntityBuilder;
 import com.tterrag.registrarrp.fabric.RegistryObject;
 import com.tterrag.registrarrp.fabric.RegistryUtil;
 import com.tterrag.registrarrp.fabric.SimpleFlowableFluid;
@@ -284,6 +277,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     	for (Map.Entry<String, JLang> entry : langs.entrySet()) {
     	    getResourcePack().addLang(new Identifier(getModid(), entry.getKey()), entry.getValue());
         }
+    	
+    	if (isDevEnvironment()) {
+    	    RegistrARRP.LOGGER.info("Development environment detected. Dumping generated resources.");
+    	    getResourcePack().dump(Paths.get(FabricLoader.getInstance().getGameDir().toString() + "/asset_dump"));
+        }
     }
 
     public RuntimeResourcePack getResourcePack() {
@@ -299,11 +297,10 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     
     public void addLangEntry(String lang, String key, String name) {
         if (!getOrCreateLang(lang).getLang().containsKey(key)) {
-            System.out.println(String.format("registering lang: [%s], [%s], [%s]", lang, key, name));
             getOrCreateLang(lang).entry(key, name);
             return;
         }
-        System.out.println(String.format("lang already registered: [%s], [%s], [%s]", lang, key, name));
+        RegistrARRP.LOGGER.warn(String.format("lang already registered: [%s], [%s], [%s]", lang, key, name));
     }
     
     @SuppressWarnings({"rawtypes", "unchecked"})

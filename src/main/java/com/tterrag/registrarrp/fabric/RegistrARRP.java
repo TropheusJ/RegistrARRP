@@ -6,12 +6,16 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Paths;
 
-public class Init implements ModInitializer {
+public class RegistrARRP implements ModInitializer {
+	public static Logger LOGGER = LogManager.getLogger("RegistrARRP");
 	public static Registrate REGISTRATE;
 	public static RegistryEntry<Block> TEST_BLOCK;
+	
 	@Override
 	public void onInitialize() {
 		if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
@@ -26,7 +30,6 @@ public class Init implements ModInitializer {
 					.register();
 			
 			REGISTRATE.register();
-			REGISTRATE.getResourcePack().dump(Paths.get(FabricLoader.getInstance().getGameDir().toString() + "/asset_dump"));
 		}
 	}
 }
