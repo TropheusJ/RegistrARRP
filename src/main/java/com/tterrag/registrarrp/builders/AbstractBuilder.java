@@ -3,13 +3,19 @@ package com.tterrag.registrarrp.builders;
 import com.tterrag.registrarrp.AbstractRegistrate;
 import com.tterrag.registrarrp.fabric.RegistryObject;
 import com.tterrag.registrarrp.fabric.RegistryUtil;
+import com.tterrag.registrarrp.util.CookingRecipeTypes;
 import com.tterrag.registrarrp.util.Utils;
 import com.tterrag.registrarrp.util.entry.LazyRegistryEntry;
 import com.tterrag.registrarrp.util.entry.RegistryEntry;
 import com.tterrag.registrarrp.util.nullness.NonNullSupplier;
 import com.tterrag.registrarrp.util.nullness.NonnullType;
+import net.devtech.arrp.json.recipe.*;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import net.minecraft.util.Util;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Base class which most builders should extend, instead of implementing [@link {@link Builder} directly.
@@ -147,11 +153,11 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
         getOwner().addLangEntry(lang, langKey, name);
     	return (S) this;
     }
-
-//    private S lang(NonNullFunction<T, String> langKeyProvider, NonNullBiFunction<RegistrateLangProvider, NonNullSupplier<? extends T>, String> localizedNameProvider) {
-//        return setData(ProviderType.LANG, (ctx, prov) -> prov.add(langKeyProvider.apply(ctx.getEntry()), localizedNameProvider.apply(prov, ctx::getEntry)));
-//    }
-
+    
+    public String getIdentifierString() {
+        return getOwner().getModid() + ":" + getName();
+    }
+    
     @javax.annotation.Generated("lombok")
     public AbstractBuilder(final AbstractRegistrate<?> owner, final P parent, final String name, final BuilderCallback callback, final Class<? super R> registryType) {
         this.owner = owner;

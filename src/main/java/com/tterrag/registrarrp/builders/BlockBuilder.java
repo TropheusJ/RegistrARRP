@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.tterrag.registrarrp.fabric.RegistrARRP;
 import com.tterrag.registrarrp.mixin.AbstractBlock$SettingsAccessor;
 import com.tterrag.registrarrp.util.CommonLootTableTypes;
+import com.tterrag.registrarrp.util.CookingRecipeTypes;
 import com.tterrag.registrarrp.util.nullness.*;
 import net.devtech.arrp.json.blockstate.JState;
 import net.devtech.arrp.json.blockstate.JVariant;
@@ -18,13 +19,18 @@ import net.devtech.arrp.json.loot.JLootTable;
 import net.devtech.arrp.json.loot.JPool;
 import net.devtech.arrp.json.models.JFaces;
 import net.devtech.arrp.json.models.JModel;
+import net.devtech.arrp.json.recipe.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.loot.LootTables;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -380,7 +386,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
                         .rolls(1)
                         .entry(JLootTable.entry()
                                 .type("minecraft:item")
-                                .name(getOwner().getModid() + ":" + getName()))
+                                .name(getIdentifierString()))
                         .condition(JLootTable.predicate("minecraft:survives_explosion"))));
     }
     
@@ -429,11 +435,11 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
                                     .type("minecraft:item")
                                     .function(JLootTable.function("minecraft:set_count")
                                             .condition(predicate("minecraft:block_state_property")
-                                                    .parameter("block", getOwner().getModid() + ":" + getName())
+                                                    .parameter("block", getIdentifierString())
                                                     .parameter("properties", blockStringProperty("type", "double")))
                                             .parameter("count", 2))
                                     .function("minecraft:explosion_decay")
-                                    .name(getOwner().getModid() + ":" + getName()))
+                                    .name(getIdentifierString()))
                             .condition(predicate("minecraft:survives_explosion"))));
         }
         
@@ -443,7 +449,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
                             .rolls(1)
                             .entry(JLootTable.entry()
                                     .type("minecraft:item")
-                                    .name(getOwner().getModid() + ":" + getName()))
+                                    .name(getIdentifierString()))
                             .condition(JLootTable.predicate("minecraft:match_tool")
                                     .parameter("predicate", silkTouchPredicate()))));
         }
@@ -465,31 +471,122 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         }
         return this;
     }
-
-    /**
-     * Configure the recipe(s) for this block.
-     * 
-     * @param cons
-     *            The callback which will be invoked during data generation.
-     * @return this {@link BlockBuilder}
-     * @see #setData(ProviderType, NonNullBiConsumer)
-     */
-//    public BlockBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Block, T>, RegistrateRecipeProvider> cons) {
-//        return setData(ProviderType.RECIPE, cons);
+    
+//    /**
+//     * Assign {@link Identified}{@code s} to this block. Multiple calls will add additional tags.
+//     *
+//     * @param tags
+//     *            The tags to assign
+//     * @return this {@link BlockBuilder}
+//     */
+//    @SafeVarargs
+//    public final BlockBuilder<T, P> tag(Identified<Block>... tags) {
+//        return tag(ProviderType.BLOCK_TAGS, tags);
 //    }
-
+    
+    // ------- RECIPES -------
+    
     /**
-     * Assign {@link Identified}{@code s} to this block. Multiple calls will add additional tags.
-     * 
-     * @param tags
-     *            The tags to assign
+     * Create a simple stonecutting recipe.
+     *
+     * @param input The input item
+     * @param outputCount The number of items in the output stack
+     * @return this {@link BlockBuilder}
+     */
+    public BlockBuilder<T, P> quickStonecutting(Item input, int outputCount) {
+        return recipe("stonecutting", JRecipe.stonecutting(JIngredient.ingredient().item(input), JResult.stackedResult(getIdentifierString(), outputCount)));
+    }
+    
+    /**
+     * Create a simple smithing recipe.
+     *
+     * @param base The base item, such as a diamond tool.
+     * @param addition The addition item, such as a Netherite ingot.
+     * @param outputCount The number of items in the output stack.
+     * @return this {@link BlockBuilder}
+     */
+    public BlockBuilder<T, P> quickSmithing(Item base, Item addition, int outputCount) {
+        return recipe("smithing", JRecipe.smithing(JIngredient.ingredient().item(base), JIngredient.ingredient().item(addition), JResult.stackedResult(getIdentifierString(), outputCount)));
+    }
+    
+    /**
+     * Create a simple cooking recipe.
+     *
+     * @param input The input for this cooking recipe
+     * @param outputCount The number of items in the output stack
+     * @param type The type of cooking recipe, such as smelting or blasting.
+     * @return this {@link BlockBuilder}
+     */
+    public BlockBuilder<T, P> quickCooking(Item input, int outputCount, CookingRecipeTypes type) {
+        if (type == CookingRecipeTypes.SMELTING) return recipe("smelting", JRecipe.smelting(JIngredient.ingredient().item(input), JResult.stackedResult(getIdentifierString(), outputCount)));
+        if (type == CookingRecipeTypes.BLASTING) return recipe("blasting", JRecipe.blasting(JIngredient.ingredient().item(input), JResult.stackedResult(getIdentifierString(), outputCount)));
+        if (type == CookingRecipeTypes.SMOKING) return recipe("smoking", JRecipe.smoking(JIngredient.ingredient().item(input), JResult.stackedResult(getIdentifierString(), outputCount)));
+        if (type == CookingRecipeTypes.CAMPFIRE) return recipe("campfire", JRecipe.campfire(JIngredient.ingredient().item(input), JResult.stackedResult(getIdentifierString(), outputCount)));
+        throw new RuntimeException("Unknown cooking recipe type. Report this!");
+    }
+    
+    /**
+     * Create a simple shapeless recipe.
+     *
+     * @param outputCount The number of items in the output stack
+     * @param ingredients Pairs of items and the number of times they appear in the recipe.
      * @return this {@link BlockBuilder}
      */
     @SafeVarargs
-    public final BlockBuilder<T, P> tag(Identified<Block>... tags) {
-        return this/*tag(ProviderType.BLOCK_TAGS, tags)*/;
+    public final BlockBuilder<T, P> quickShapeless(int outputCount, Pair<Item, Integer>... ingredients) {
+        JIngredients jIngredients = JIngredients.ingredients();
+        for (Pair<Item, Integer> pair : ingredients) {
+            for (int i = 0; i < pair.getRight(); i++) {
+                jIngredients.add(JIngredient.ingredient().item(pair.getLeft()));
+            }
+        }
+        return recipe("shapeless", JRecipe.shapeless(jIngredients, JResult.stackedResult(getIdentifierString(), outputCount)));
     }
-
+    
+    /**
+     * Create a simple shaped recipe.
+     * <br>
+     * --- Example usage --- <br>
+     * goal recipe:<br>
+     * "XXX"<br>
+     * "XYX"<br>
+     * "XXX"<br>
+     * X: Netherite scrap<br>
+     * Y: Mossy cobblestone<br>
+     * output: Iron shovel<br>
+     * <br>
+     * correct usage:<br>
+     * {@code quickShaped(1, "XXX", "XYX", "XXX", new Pair("X", Items.NETHERITE_SCRAP), new Pair("Y", Items.MOSSY_COBBLESTONE))}
+     *
+     * @param outputCount The number of items in the output stack
+     * @param row1 The first row of the shaped recipe
+     * @param row2 The second row of the shaped recipe
+     * @param row3 The third row of the shaped recipe
+     * @param keys Pairs containing the keys to the items in the recipe.
+     * @return this {@link BlockBuilder}
+     */
+    @SafeVarargs
+    public final BlockBuilder<T, P> quickShaped(int outputCount, String row1, String row2, String row3, Pair<String, Item>... keys) {
+        JKeys jKeys = JKeys.keys();
+        for (Pair<String, Item> pair : keys) {
+            jKeys.key(pair.getLeft(), JIngredient.ingredient().item(pair.getRight()));
+        }
+        return recipe("shaped", JRecipe.shaped(JPattern.pattern(row1, row2, row3), jKeys, JResult.stackedResult(getIdentifierString(), outputCount)));
+    }
+    
+    /**
+     * Configure the recipe(s) for this block.
+     * If the recipeID is null, one will be generated.
+     *
+     * @param recipeType The name of the added recipe, such as "stonecutting" or "shaped"
+     * @param recipe The recipe to add, in the form of a raw {@link JRecipe} object.
+     * @return this {@link BlockBuilder}
+     */
+    public BlockBuilder<T, P> recipe(@Nullable String recipeType, JRecipe recipe) {
+        getOwner().addRecipe(recipeType, recipe);
+        return this;
+    }
+    
     @Override
     protected T createEntry() {
         @NotNull FabricBlockSettings properties = this.initialProperties.get();

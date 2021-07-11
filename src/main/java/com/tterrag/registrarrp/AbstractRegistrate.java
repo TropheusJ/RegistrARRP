@@ -15,6 +15,7 @@ import com.tterrag.registrarrp.fabric.RegistrARRP;
 import net.devtech.arrp.api.RRPCallback;
 import net.devtech.arrp.api.RuntimeResourcePack;
 import net.devtech.arrp.json.lang.JLang;
+import net.devtech.arrp.json.recipe.JRecipe;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
@@ -188,6 +189,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return FabricLoader.getInstance().isDevelopmentEnvironment();
     }
 
+    private long recipes = 0;
     private final Map<String, JLang> langs = new HashMap<>();
     private final RuntimeResourcePack resourcePack;
     private final Table<String, Class<?>, Registration<?, ?>> registrations = HashBasedTable.create();
@@ -301,6 +303,12 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             return;
         }
         RegistrARRP.LOGGER.warn(String.format("lang already registered: [%s], [%s], [%s]", lang, key, name));
+    }
+    
+    public void addRecipe(@Nullable String recipeType, JRecipe recipe) {
+        Identifier idToUse = new Identifier(getModid(), recipeType == null ? "unknown_recipe" : recipeType + recipes);
+        recipes++;
+        getResourcePack().addRecipe(idToUse, recipe);
     }
     
     @SuppressWarnings({"rawtypes", "unchecked"})

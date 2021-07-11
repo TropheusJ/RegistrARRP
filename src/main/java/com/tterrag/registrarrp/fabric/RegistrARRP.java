@@ -8,6 +8,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.item.Items;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,8 +28,10 @@ public class RegistrARRP implements ModInitializer {
 					.block(Block::new)
 					.initialProperties(() -> Blocks.DIRT)
 					.defaultBlockstate()
-					.simpleLoot(CommonLootTableTypes.SILK_TOUCH_REQUIRED)
+					.defaultLoot()
 					.defaultLang()
+					.quickStonecutting(Items.STONE, 4)
+					.quickSmithing(Items.DIAMOND_BLOCK, Items.STONE_AXE, 17)
 					.item()
 					.build()
 					.register();
