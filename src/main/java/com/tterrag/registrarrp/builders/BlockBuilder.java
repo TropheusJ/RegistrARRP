@@ -5,14 +5,27 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import com.google.common.base.Preconditions;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.tterrag.registrarrp.fabric.RegistrARRP;
+import com.tterrag.registrarrp.mixin.AbstractBlock$SettingsAccessor;
+import com.tterrag.registrarrp.util.CommonLootTableTypes;
 import com.tterrag.registrarrp.util.nullness.*;
 import net.devtech.arrp.json.blockstate.JState;
+import net.devtech.arrp.json.blockstate.JVariant;
+import net.devtech.arrp.json.loot.JEntry;
+import net.devtech.arrp.json.loot.JLootTable;
+import net.devtech.arrp.json.loot.JPool;
+import net.devtech.arrp.json.models.JFaces;
+import net.devtech.arrp.json.models.JModel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.minecraft.loot.LootTables;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,6 +46,10 @@ import com.tterrag.registrarrp.fabric.EnvExecutor;
 import com.tterrag.registrarrp.fabric.RegistryObject;
 import com.tterrag.registrarrp.util.entry.BlockEntry;
 import com.tterrag.registrarrp.util.entry.RegistryEntry;
+
+import static net.devtech.arrp.json.loot.JLootTable.condition;
+import static net.devtech.arrp.json.loot.JLootTable.predicate;
+import static net.devtech.arrp.json.models.JModel.face;
 
 /**
  * A builder for blocks, allows for customization of the {@link FabricBlockSettings}, creation of block items, and configuration of data associated with blocks (loot tables, recipes, etc.).
@@ -315,90 +332,139 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
     
     protected void registerBlockColor() {
-//        OneTimeEventReceiver.addModListener(ColorHandlerEvent.Block.class, e -> {
-//            NonNullSupplier<Supplier<BlockColorProvider>> colorHandler = this.colorHandler;
-//            if (colorHandler != null) {
-//                e.getBlockColors().registerColorProvider(colorHandler.get().get(), getEntry());
-//            }
-//        });
         onRegister(entry -> {
             ColorProviderRegistry.BLOCK.register(colorHandler.get().get(), entry);
         });
     }
 
     /**
-     * Assign the default blockstate, which maps all states to a single model file (via {@link RegistrateBlockstateProvider#simpleBlock(Block)}). This is the default, so it is generally not necessary
-     * to call, unless for undoing previous changes.
+     * Assign the default blockstate, which maps all states to a single model.
      * 
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> defaultBlockstate() {
+        JModel model = JModel.model().textures(JModel.textures().var("all", "block/" + getName()).particle("block/" + getName()))
+                .element(JModel.element().from(0, 0, 0).to(16, 16, 16)
+                        .faces(JModel.faces()
+                                .up(JModel.face("all").uv(0, 0, 16, 16))
+                                .down(JModel.face("all").uv(0, 0, 16, 16))
+                                .north(JModel.face("all").uv(0, 0, 16, 16))
+                                .south(JModel.face("all").uv(0, 0, 16, 16))
+                                .east(JModel.face("all").uv(0, 0, 16, 16))
+                                .west(JModel.face("all").uv(0, 0, 16, 16))));
+        getOwner().getResourcePack().addModel(model, new Identifier(getOwner().getModid(), getName()));
         return blockstate(new Identifier(getOwner().getModid(), getName()),
-                JState.state().add(JState.variant(JState.model(getName()))));
+                JState.state().add(JState.variant(JState.model(new Identifier(getOwner().getModid(), getName())))));
     }
 
     /**
      * Configure the blockstate/models for this block.
      * 
-     * @param cons
-     *            The callback which will be invoked during data generation.
+     * @param stateID The Identifier for the BlockState, should typically be equal to {@code new Identifier(getOwner().getModid(), getName())}, but may be changed to match the state.
+     * @param state The BlockState to give this block, in the form of a raw {@link JState} object.
      * @return this {@link BlockBuilder}
-     * @see #setData(ProviderType, NonNullBiConsumer)
      */
     public BlockBuilder<T, P> blockstate(Identifier stateID, JState state) {
         getOwner().getResourcePack().addBlockState(state, stateID);
         return this;
     }
 
-//    /**
-//     * Assign the default translation. This is the default, so it is generally not necessary to call, unless for undoing
-//     * previous changes.
-//     *
-//     * @return this {@link BlockBuilder}
-//     */
-//    public BlockBuilder<T, P> defaultLang() {
-//        return lang(RegistrateLangProvider.toEnglishName(getName()));
-//    }
-
-//    /**
-//     * Set the translation for this block.
-//     *
-//     * @param name
-//     *            A localized English name
-//     * @return this {@link BlockBuilder}
-//     */
-//    public BlockBuilder<T, P> lang(String name) {
-//        return lang(Util.createTranslationKey(RegistryUtil.getRegistry(getRegistryType()).getKey().getValue().getPath(),
-//                new Identifier(getOwner().getModid(), getName())), name);
-//    }
-
     /**
-     * Assign the default loot table, as specified by {@link RegistrateBlockLootTables#addDrop(Block)}. This is the default, so it is generally not necessary to call, unless for
-     * undoing previous changes.
+     * Assign the default loot table. Block will drop itself.
      * 
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> defaultLoot() {
-        return this/*loot(RegistrateBlockLootTables::addDrop)*/;
+        return loot(JLootTable.loot("minecraft:block")
+                .pool(JLootTable.pool()
+                        .rolls(1)
+                        .entry(JLootTable.entry()
+                                .type("minecraft:item")
+                                .name(getOwner().getModid() + ":" + getName()))
+                        .condition(JLootTable.predicate("minecraft:survives_explosion"))));
+    }
+    
+    // credit to https://github.com/Azagwen/ATBYW/ for these 2 helper methods
+    private static JsonObject silkTouchPredicate() {
+        JsonObject level = new JsonObject();
+        level.addProperty("min", 1);
+    
+        JsonObject silkTouch = new JsonObject();
+        silkTouch.addProperty("enchantment", "minecraft:silk_touch");
+        silkTouch.add("levels", level);
+        
+        JsonArray enchantments = new JsonArray();
+        enchantments.add(silkTouch);
+    
+        JsonObject predicate = new JsonObject();
+        predicate.add("enchantments", enchantments);
+        
+        return predicate;
+    }
+    
+    private static JsonObject blockStringProperty(String name, String value) {
+        JsonObject property = new JsonObject();
+        property.addProperty(name, value);
+        
+        return property;
+    }
+    
+    /**
+     * Assign a common loot table to this block, determined by the {@link CommonLootTableTypes} fed in.
+     *
+     * @return this {@link BlockBuilder}
+     */
+    public BlockBuilder<T, P> simpleLoot(CommonLootTableTypes type) {
+        if (type == CommonLootTableTypes.NEVER) {
+            properties(FabricBlockSettings::dropsNothing);
+            return this;
+        }
+    
+        // credit to https://github.com/Azagwen/ATBYW/ for these 2
+        if (type == CommonLootTableTypes.SLAB) {
+            return loot(JLootTable.loot("minecraft:block")
+                    .pool(JLootTable.pool()
+                            .rolls(1)
+                            .entry(JLootTable.entry()
+                                    .type("minecraft:item")
+                                    .function(JLootTable.function("minecraft:set_count")
+                                            .condition(predicate("minecraft:block_state_property")
+                                                    .parameter("block", getOwner().getModid() + ":" + getName())
+                                                    .parameter("properties", blockStringProperty("type", "double")))
+                                            .parameter("count", 2))
+                                    .function("minecraft:explosion_decay")
+                                    .name(getOwner().getModid() + ":" + getName()))
+                            .condition(predicate("minecraft:survives_explosion"))));
+        }
+        
+        if (type == CommonLootTableTypes.SILK_TOUCH_REQUIRED) {
+            return loot(JLootTable.loot("minecraft:block")
+                    .pool(JLootTable.pool()
+                            .rolls(1)
+                            .entry(JLootTable.entry()
+                                    .type("minecraft:item")
+                                    .name(getOwner().getModid() + ":" + getName()))
+                            .condition(JLootTable.predicate("minecraft:match_tool")
+                                    .parameter("predicate", silkTouchPredicate()))));
+        }
+    
+        throw new RuntimeException("Attempted to use a CommonLootTableTypes with no behavior, report this as an issue!");
     }
 
     /**
-     * Configure the loot table for this block. This is different than most data gen callbacks as the callback does not accept a {@link DataGenContext}, but instead a
-     * {@link RegistrateBlockLootTables}, for creating specifically block loot tables.
+     * Configure the loot table for this block.
      * <p>
      * If the block does not have a loot table (i.e. {@link FabricBlockSettings#dropsNothing()} is called) this action will be <em>skipped</em>.
-     * 
-     * @param cons
-     *            The callback which will be invoked during block loot table creation.
+     *
+     * @param table The loot table for this block, in the form of a raw {@link JLootTable} object.
      * @return this {@link BlockBuilder}
      */
-//    public BlockBuilder<T, P> loot(NonNullBiConsumer<RegistrateBlockLootTables, T> cons) {
-//        return setData(ProviderType.LOOT, (ctx, prov) -> prov.addLootAction(LootType.BLOCK, tb -> {
-//            if (!ctx.getEntry().getLootTableId().equals(LootTables.EMPTY)) {
-//                cons.accept(tb, ctx.getEntry());
-//            }
-//        }));
-//    }
+    public BlockBuilder<T, P> loot(JLootTable table) {
+        if (((AbstractBlock$SettingsAccessor) initialProperties.get()).getLootTableId() != LootTables.EMPTY) {
+            getOwner().getResourcePack().addLootTable(new Identifier(getOwner().getModid(), "blocks/" + getName()), table);
+        }
+        return this;
+    }
 
     /**
      * Configure the recipe(s) for this block.

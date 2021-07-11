@@ -1,7 +1,9 @@
 package com.tterrag.registrarrp.fabric;
 
 import com.tterrag.registrarrp.Registrate;
+import com.tterrag.registrarrp.util.CommonLootTableTypes;
 import com.tterrag.registrarrp.util.entry.RegistryEntry;
+import net.devtech.arrp.json.loot.JLootTable;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
@@ -24,9 +26,11 @@ public class RegistrARRP implements ModInitializer {
 			TEST_BLOCK = REGISTRATE.object("test")
 					.block(Block::new)
 					.initialProperties(() -> Blocks.DIRT)
+					.defaultBlockstate()
+					.simpleLoot(CommonLootTableTypes.SILK_TOUCH_REQUIRED)
+					.defaultLang()
 					.item()
 					.build()
-					.defaultLang()
 					.register();
 			
 			REGISTRATE.register();

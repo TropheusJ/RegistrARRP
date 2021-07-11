@@ -4,6 +4,7 @@
   "package": "com.tterrag.registrarrp.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "AbstractBlock$SettingsAccessor",
     "FluidBlockAccessor",
     "ScreenHandlerRegistryMixin",
     "SpawnEggItemAccessor"
