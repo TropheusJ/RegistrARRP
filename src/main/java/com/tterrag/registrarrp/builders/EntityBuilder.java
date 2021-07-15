@@ -14,6 +14,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.client.render.entity.EntityRenderer;
+import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -40,7 +41,7 @@ public class EntityBuilder<T extends Entity, B extends FabricEntityTypeBuilder<T
 	private NonNullConsumer<B> builderCallback = $ -> {
 	};
 	@Nullable
-	private NonNullSupplier<EntityRendererRegistry.Factory> renderer;
+	private NonNullSupplier<EntityRendererFactory<T>> renderer;
 	private boolean spawnConfigured;
 	private @Nullable ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, B, P>> spawnEggBuilder;
 	
@@ -101,12 +102,12 @@ public class EntityBuilder<T extends Entity, B extends FabricEntityTypeBuilder<T
 	 * Register an {@link EntityRenderer} for this entity.
 	 * <p>
 	 *
-	 * @param renderer A (server safe) supplier to an {@link EntityRendererRegistry.Factory} that will provide this entity's renderer
+	 * @param renderer A (server safe) supplier to an {@link EntityRendererFactory} that will provide this entity's renderer
 	 * @return this {@link EntityBuilder}
 	 * @apiNote This requires the {@link Class} of the entity object, which can only be gotten by inspecting an instance of it. Thus, the entity will be constructed with a {@code null} {@link World}
 	 * to register the renderer.
 	 */
-	public EntityBuilder<T, B, P> renderer(NonNullSupplier<EntityRendererRegistry.Factory> renderer) {
+	public EntityBuilder<T, B, P> renderer(NonNullSupplier<EntityRendererFactory<T>> renderer) {
 		if (this.renderer == null) { // First call only
 			EnvExecutor.runWhenOn(EnvType.CLIENT, () -> this::registerRenderer);
 		}

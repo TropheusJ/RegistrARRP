@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "registrarrp",
   "version": "${version}",
-
+  "accessWidener" : "registrarrp.accesswidener",
   "name": "RegistrARRP",
   "description": "A fork of Registrate for Fabric, which allows for easy registration and data generation.",
   "authors": [

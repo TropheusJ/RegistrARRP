@@ -14,6 +14,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
+import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -99,14 +100,14 @@ public class TileEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder
 	
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	protected void registerRenderer() {
-		onRegister(entry -> BlockEntityRendererRegistry.INSTANCE.register((BlockEntityType) entry, (Function) renderer.get()));
+		onRegister(entry -> BlockEntityRendererRegistry.INSTANCE.register((BlockEntityType) entry, (BlockEntityRendererFactory<? super BlockEntity>) renderer.get()));
 	}
 	
 	@Override
 	protected BlockEntityType<T> createEntry() {
 		NonNullFunction<BlockEntityType<T>, ? extends T> factory = this.factory;
 		Supplier<BlockEntityType<T>> supplier = asSupplier();
-		return BlockEntityType.Builder.<T>create(() -> factory.apply(supplier.get()), validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
+		return BlockEntityType.Builder.<T>create((pos, state) -> factory.apply(supplier.get()), validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
 				.build(null);
 	}
 	

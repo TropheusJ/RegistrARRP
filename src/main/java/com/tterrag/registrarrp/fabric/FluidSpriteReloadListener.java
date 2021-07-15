@@ -8,7 +8,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.SynchronousResourceReloadListener;
+import net.minecraft.resource.SynchronousResourceReloader;
 import net.minecraft.util.Identifier;
 
 import java.util.Arrays;
@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class FluidSpriteReloadListener implements IdentifiableResourceReloadListener, SynchronousResourceReloadListener {
+public class FluidSpriteReloadListener implements IdentifiableResourceReloadListener, SynchronousResourceReloader {
 	public static final Identifier ID = new Identifier("registrarrp", "fluid_sprites");
 	public static final FluidSpriteReloadListener INSTANCE = new FluidSpriteReloadListener();
 	
@@ -27,7 +27,7 @@ public class FluidSpriteReloadListener implements IdentifiableResourceReloadList
 	}
 	
 	@Override
-	public void apply(ResourceManager manager) {
+	public void reload(ResourceManager manager) {
 		// Fluid rendering always uses the block atlas
 		Function<Identifier, Sprite> atlas = MinecraftClient.getInstance().getSpriteAtlas(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
 		for (Identifier id : callbacks.keySet()) {

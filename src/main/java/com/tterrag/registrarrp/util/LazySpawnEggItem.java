@@ -15,7 +15,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.SpawnEggItem;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.stat.Stats;
 import net.minecraft.util.ActionResult;
@@ -46,7 +46,7 @@ public class LazySpawnEggItem<T extends Entity> extends SpawnEggItem {
 		SpawnEggItemAccessor.getEggMap().put(typeIn.get(), this);
 	}
 	
-	public EntityType<?> getEntityType(@Nullable CompoundTag p_208076_1_) {
+	public EntityType<?> getEntityType(@Nullable NbtCompound p_208076_1_) {
 		if (p_208076_1_ != null && p_208076_1_.contains("EntityTag", 10)) {
 			return super.getEntityType(p_208076_1_);
 		}
@@ -68,7 +68,7 @@ public class LazySpawnEggItem<T extends Entity> extends SpawnEggItem {
 				BlockEntity tileentity = world.getBlockEntity(blockpos);
 				if (tileentity instanceof MobSpawnerBlockEntity) {
 					MobSpawnerLogic abstractspawner = ((MobSpawnerBlockEntity) tileentity).getLogic();
-					EntityType<?> entitytype1 = this.getEntityType(itemstack.getTag());
+					EntityType<?> entitytype1 = this.getEntityType(itemstack.getNbt());
 					abstractspawner.setEntityId(entitytype1);
 					tileentity.markDirty();
 					world.updateListeners(blockpos, blockstate, blockstate, 3);
@@ -84,7 +84,7 @@ public class LazySpawnEggItem<T extends Entity> extends SpawnEggItem {
 				blockpos1 = blockpos.offset(direction);
 			}
 			
-			EntityType<?> entitytype = this.getEntityType(itemstack.getTag());
+			EntityType<?> entitytype = this.getEntityType(itemstack.getNbt());
 			if (entitytype.spawnFromItemStack((ServerWorld) world, itemstack, context.getPlayer(), blockpos1, SpawnReason.SPAWN_EGG, true, !Objects.equals(blockpos, blockpos1) && direction == Direction.UP) != null) {
 				itemstack.decrement(1);
 			}
@@ -107,11 +107,11 @@ public class LazySpawnEggItem<T extends Entity> extends SpawnEggItem {
 				if (!(worldIn.getBlockState(blockpos).getBlock() instanceof FluidBlock)) {
 					return new TypedActionResult<>(ActionResult.PASS, itemstack);
 				} else if (worldIn.canPlayerModifyAt(playerIn, blockpos) && playerIn.canPlaceOn(blockpos, blockraytraceresult.getSide(), itemstack)) {
-					EntityType<?> entitytype = this.getEntityType(itemstack.getTag());
+					EntityType<?> entitytype = this.getEntityType(itemstack.getNbt());
 					if (entitytype.spawnFromItemStack((ServerWorld) worldIn, itemstack, playerIn, blockpos, SpawnReason.SPAWN_EGG, false, false) == null) {
 						return new TypedActionResult<>(ActionResult.PASS, itemstack);
 					} else {
-						if (!playerIn.abilities.creativeMode) {
+						if (!playerIn.getAbilities().creativeMode) {
 							itemstack.decrement(1);
 						}
 						

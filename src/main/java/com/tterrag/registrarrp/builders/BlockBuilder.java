@@ -27,8 +27,8 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.MapColor;
 import net.minecraft.block.Material;
-import net.minecraft.block.MaterialColor;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.color.block.BlockColorProvider;
@@ -171,7 +171,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 	 * @param color    The color of the intial properties
 	 * @return this {@link BlockBuilder}
 	 */
-	public BlockBuilder<T, P> initialProperties(Material material, MaterialColor color) {
+	public BlockBuilder<T, P> initialProperties(Material material, MapColor color) {
 		initialProperties = () -> FabricBlockSettings.of(material, color);
 		return this;
 	}

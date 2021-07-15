@@ -2,10 +2,7 @@ package com.tterrag.registrarrp;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Table;
+import com.google.common.collect.*;
 import com.tterrag.registrarrp.builders.*;
 import com.tterrag.registrarrp.builders.ContainerBuilder.ContainerFactory;
 import com.tterrag.registrarrp.builders.ContainerBuilder.ForgeContainerFactory;
@@ -17,6 +14,7 @@ import com.tterrag.registrarrp.fabric.RegistryUtil;
 import com.tterrag.registrarrp.fabric.SimpleFlowableFluid;
 import com.tterrag.registrarrp.util.DebugMarkers;
 import com.tterrag.registrarrp.util.NonNullLazyValue;
+import com.tterrag.registrarrp.util.Utils;
 import com.tterrag.registrarrp.util.entry.RegistryEntry;
 import com.tterrag.registrarrp.util.nullness.*;
 import net.devtech.arrp.api.RRPCallback;
@@ -44,16 +42,14 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.tag.BlockTags;
-import net.minecraft.tag.FluidTags;
-import net.minecraft.tag.ItemTags;
-import net.minecraft.tag.Tag;
+import net.minecraft.tag.*;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Field;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
@@ -198,11 +194,12 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 	 */
 	public void addToTag(Tag.Identified<?> tag, Identifier id) {
 		Identifier tagID;
-		if (BlockTags.getRequiredTags().contains(tag)) {
+		List<Field> blockTags = Utils.BLOCK_TAGS;
+		if (Utils.tagInSet(tag, Utils.BLOCK_TAGS)) {
 			tagID = new Identifier("minecraft", "blocks/" + tag.getId().getPath());
-		} else if (ItemTags.getRequiredTags().contains(tag)) {
+		} else if (Utils.tagInSet(tag, Utils.ITEM_TAGS)) {
 			tagID = new Identifier("minecraft", "items/" + tag.getId().getPath());
-		} else if (FluidTags.getRequiredTags().contains(tag)) {
+		} else if (Utils.tagInSet(tag, Utils.FLUID_TAGS)) {
 			tagID = new Identifier("minecraft", "fluids/" + tag.getId().getPath());
 		} else {
 			throw new IllegalStateException("non-minecraft tag fed into AbstractRegistrate#addToTag! See the javadoc on usage!");

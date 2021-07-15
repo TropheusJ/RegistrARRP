@@ -2,6 +2,7 @@ package com.tterrag.registrarrp.util.entry;
 
 import com.tterrag.registrarrp.AbstractRegistrate;
 import com.tterrag.registrarrp.fabric.RegistryObject;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
@@ -26,8 +27,8 @@ public class TileEntityEntry<T extends BlockEntity> extends RegistryEntry<BlockE
 	 * @return The instance
 	 */
 	@SuppressWarnings("null")
-	public T create() {
-		return get().instantiate();
+	public T create(BlockPos pos, BlockState state) {
+		return get().instantiate(pos, state);
 	}
 	
 	/**
