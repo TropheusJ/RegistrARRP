@@ -1,11 +1,10 @@
 package com.tterrag.registrarrp.mixin;
 
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Invoker;
-
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.fluid.FlowableFluid;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(FluidBlock.class)
 public interface FluidBlockAccessor {

@@ -1,10 +1,7 @@
 package com.tterrag.registrarrp.fabric;
 
-import java.util.function.Consumer;
-
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.enchantment.Enchantment;
@@ -51,34 +48,36 @@ import net.minecraft.world.gen.tree.TreeDecoratorType;
 import net.minecraft.world.gen.trunk.TrunkPlacerType;
 import net.minecraft.world.poi.PointOfInterestType;
 
+import java.util.function.Consumer;
+
 public class RegistryUtil {
 	private static BiMap<Registry<?>, Class<?>> registryMap;
-
+	
 	@SuppressWarnings("unchecked")
 	public static <T> Registry<T> getRegistry(Class<T> clazz) {
 		return (Registry<T>) getRegistryMap().inverse().get(clazz);
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	public static <T> Class<T> getRegistrationClass(Registry<T> registry) {
 		return (Class<T>) getRegistryMap().get(registry);
 	}
-
+	
 	public static BiMap<Registry<?>, Class<?>> getRegistryMap() {
 		if (registryMap == null) {
 			registryMap = createDefaultRegistryMap();
 		}
 		return registryMap;
 	}
-
+	
 	public static BiMap<Registry<?>, Class<?>> createDefaultRegistryMap() {
 		BiMap<Registry<?>, Class<?>> map = HashBiMap.create();
-
+		
 		// Fluid before Block because of FluidBlock ctor
 		map.put(Registry.FLUID, Fluid.class);
 		map.put(Registry.BLOCK, Block.class);
 		map.put(Registry.ITEM, Item.class);
-
+		
 		map.put(Registry.ACTIVITY, Activity.class);
 		map.put(Registry.ATTRIBUTE, EntityAttribute.class);
 //		map.put(Registry.BIOME_SOURCE, Codec.class);
@@ -126,15 +125,15 @@ public class RegistryUtil {
 		map.put(Registry.SENSOR_TYPE, SensorType.class);
 		map.put(Registry.VILLAGER_PROFESSION, VillagerProfession.class);
 		map.put(Registry.VILLAGER_TYPE, VillagerType.class);
-
+		
 		return map;
 	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	public static Identifier getId(Registry<?> registry) {
 		return ((Registry) Registry.REGISTRIES).getId(registry);
 	}
-
+	
 	public static void forAllRegistries(Consumer<Registry<?>> consumer) {
 		// Fluid, Block, and Item need to run first
 		getRegistryMap().keySet().forEach(consumer);

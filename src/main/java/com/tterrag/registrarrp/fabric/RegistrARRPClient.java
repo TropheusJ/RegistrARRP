@@ -2,7 +2,6 @@ package com.tterrag.registrarrp.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-
 import net.minecraft.resource.ResourceType;
 
 public class RegistrARRPClient implements ClientModInitializer {

@@ -1,9 +1,9 @@
 package com.tterrag.registrarrp.fabric;
 
-import java.util.function.Supplier;
-
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
+
+import java.util.function.Supplier;
 
 public class EnvExecutor {
 	public static void runWhenOn(EnvType env, Supplier<Runnable> toRun) {

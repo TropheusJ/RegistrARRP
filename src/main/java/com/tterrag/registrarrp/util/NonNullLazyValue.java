@@ -5,13 +5,13 @@ import com.tterrag.registrarrp.util.nullness.NonNullSupplier;
 import com.tterrag.registrarrp.util.nullness.NonnullType;
 
 public class NonNullLazyValue<T> extends Lazy<T> implements NonNullSupplier<T> {
-
-    public NonNullLazyValue(NonNullSupplier<T> supplier) {
-        super(supplier);
-    }
-
-    @Override
-    public @NonnullType T get() {
-        return super.get();
-    }
+	
+	public NonNullLazyValue(NonNullSupplier<T> supplier) {
+		super(supplier);
+	}
+	
+	@Override
+	public @NonnullType T get() {
+		return super.get();
+	}
 }

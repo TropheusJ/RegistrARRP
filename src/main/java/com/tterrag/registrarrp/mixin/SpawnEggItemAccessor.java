@@ -1,12 +1,11 @@
 package com.tterrag.registrarrp.mixin;
 
-import java.util.Map;
-
+import net.minecraft.entity.EntityType;
+import net.minecraft.item.SpawnEggItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.SpawnEggItem;
+import java.util.Map;
 
 @Mixin(SpawnEggItem.class)
 public interface SpawnEggItemAccessor {

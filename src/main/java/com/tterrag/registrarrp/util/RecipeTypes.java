@@ -1,8 +1,9 @@
 package com.tterrag.registrarrp.util;
 
-public enum CookingRecipeTypes {
+public enum RecipeTypes {
 	SMELTING,
 	BLASTING,
 	SMOKING,
-	CAMPFIRE
+	CAMPFIRE,
+	STONECUTTING
 }
