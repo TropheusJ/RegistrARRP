@@ -191,7 +191,9 @@ public class EntityBuilder<T extends Entity, B extends FabricEntityTypeBuilder<T
 	 * @return this {@link EntityBuilder}
 	 */
 	public EntityBuilder<T, B, P> loot(JLootTable table) {
-		getOwner().getResourcePack().addLootTable(new Identifier(getOwner().getModid(), "entities/" + getName()), table);
+		if (getOwner().doDatagen) {
+			getOwner().getResourcePack().addLootTable(new Identifier(getOwner().getModid(), "entities/" + getName()), table);
+		}
 		return this;
 	}
 	

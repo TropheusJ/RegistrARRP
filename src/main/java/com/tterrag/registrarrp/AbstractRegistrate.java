@@ -113,6 +113,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 	@Nullable
 	private NonNullLazyValue<? extends ItemGroup> currentGroup;
 	private boolean skipErrors;
+	public boolean doDatagen = true;
 	
 	/**
 	 * Construct a new Registrate for the given mod ID.
@@ -143,19 +144,21 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 			onRegisterLate(registry);
 		});
 		
-		for (Map.Entry<String, JLang> entry : langs.entrySet()) {
-			getResourcePack().addLang(new Identifier(getModid(), entry.getKey()), entry.getValue());
-		}
-		
-		for (Entry<Identifier, JTag> entry : tags.entrySet()) {
-			getResourcePack().addTag(entry.getKey(), entry.getValue());
-		}
-		
-		if (isDevEnvironment()) {
-			RegistrARRP.LOGGER.info("Development environment detected. Dumping generated resources to the game directory: [" +
-					FabricLoader.getInstance().getGameDir().toString().split("\\.")
-							[FabricLoader.getInstance().getGameDir().toString().split("\\.").length - 1] + "registrarrp_asset_dump].");
-			getResourcePack().dump(Paths.get(FabricLoader.getInstance().getGameDir().toString() + "/registrarrp_asset_dump"));
+		if (doDatagen) {
+			for (Map.Entry<String, JLang> entry : langs.entrySet()) {
+				getResourcePack().addLang(new Identifier(getModid(), entry.getKey()), entry.getValue());
+			}
+			
+			for (Entry<Identifier, JTag> entry : tags.entrySet()) {
+				getResourcePack().addTag(entry.getKey(), entry.getValue());
+			}
+			
+			if (isDevEnvironment()) {
+				RegistrARRP.LOGGER.info("Development environment detected. Dumping generated resources to the game directory: [" +
+						FabricLoader.getInstance().getGameDir().toString().split("\\.")
+								[FabricLoader.getInstance().getGameDir().toString().split("\\.").length - 1] + "registrarrp_asset_dump].");
+				getResourcePack().dump(Paths.get(FabricLoader.getInstance().getGameDir().toString() + "/registrarrp_asset_dump"));
+			}
 		}
 	}
 	
@@ -179,9 +182,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 	}
 	
 	public void addRecipe(@Nullable String recipeName, JRecipe recipe) {
-		Identifier idToUse = new Identifier(getModid(), recipeName == null ? "unknown_recipe" : recipeName + recipes);
-		recipes++;
-		getResourcePack().addRecipe(idToUse, recipe);
+		if (doDatagen) {
+			Identifier idToUse = new Identifier(getModid(), recipeName == null ? "unknown_recipe" : recipeName + recipes);
+			recipes++;
+			getResourcePack().addRecipe(idToUse, recipe);
+		}
 	}
 	
 	/**
@@ -228,6 +233,15 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 			return tag;
 		}
 		return tags.get(id);
+	}
+	
+	/**
+	 * For when you want to generate assets and just ship those instead of running at runtime.
+	 * See the Data section of the README for more info.
+	 * @param value Weather data should be generated, or regular assets should be used instead.
+	 */
+	public void doDatagen(boolean value) {
+		doDatagen = value;
 	}
 	
 	@SuppressWarnings({"rawtypes", "unchecked"})

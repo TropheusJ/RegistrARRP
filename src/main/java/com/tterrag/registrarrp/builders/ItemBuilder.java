@@ -170,7 +170,9 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
 	 * @return this {@link ItemBuilder}
 	 */
 	public ItemBuilder<T, P> model(Identifier modelID, JModel model) {
-		getOwner().getResourcePack().addModel(model, modelID);
+		if (getOwner().doDatagen) {
+			getOwner().getResourcePack().addModel(model, modelID);
+		}
 		return this;
 	}
 	

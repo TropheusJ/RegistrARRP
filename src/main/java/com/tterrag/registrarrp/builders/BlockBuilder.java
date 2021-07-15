@@ -707,14 +707,16 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 	
 	@Override
 	public BlockEntry<T> register() {
-		for (Map.Entry<Identifier, JModel> entry : models.entrySet()) {
-			getOwner().getResourcePack().addModel(entry.getValue(), entry.getKey());
+		if (getOwner().doDatagen) {
+			for (Map.Entry<Identifier, JModel> entry : models.entrySet()) {
+				getOwner().getResourcePack().addModel(entry.getValue(), entry.getKey());
+			}
+			getOwner().getResourcePack().addBlockState(blockState.getRight(), blockState.getLeft());
+			if ((getParent() instanceof FluidBuilder) || ((AbstractBlock$SettingsAccessor) initialProperties.get()).getLootTableId() == LootTables.EMPTY) {
+				return (BlockEntry<T>) super.register(); // fluid blocks don't get loot tables
+			}
+			getOwner().getResourcePack().addLootTable(new Identifier(getOwner().getModid(), "blocks/" + getName()), lootTable);
 		}
-		getOwner().getResourcePack().addBlockState(blockState.getRight(), blockState.getLeft());
-		if ((getParent() instanceof FluidBuilder) || ((AbstractBlock$SettingsAccessor) initialProperties.get()).getLootTableId() == LootTables.EMPTY) {
-			return (BlockEntry<T>) super.register(); // fluid blocks don't get loot tables
-		}
-		getOwner().getResourcePack().addLootTable(new Identifier(getOwner().getModid(), "blocks/" + getName()), lootTable);
 		return (BlockEntry<T>) super.register();
 	}
 }

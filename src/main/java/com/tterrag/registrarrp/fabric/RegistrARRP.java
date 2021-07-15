@@ -1,6 +1,7 @@
 package com.tterrag.registrarrp.fabric;
 
 import com.tterrag.registrarrp.Registrate;
+import com.tterrag.registrarrp.util.CommonLootTableTypes;
 import com.tterrag.registrarrp.util.RecipeTypes;
 import com.tterrag.registrarrp.util.entry.RegistryEntry;
 import net.fabricmc.api.ModInitializer;
@@ -36,6 +37,8 @@ public class RegistrARRP implements ModInitializer {
 						REGISTRATE.object(blockName)
 								.block(Block::new)
 								.recipe(Items.STONE, 4, RecipeTypes.STONECUTTING)
+								.tag(BlockTags.ANVIL)
+								.simpleLoot(CommonLootTableTypes.SILK_TOUCH_REQUIRED)
 								.simpleItem()
 								.register()
 								.get());
