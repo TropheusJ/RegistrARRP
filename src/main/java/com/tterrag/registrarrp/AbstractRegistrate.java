@@ -98,11 +98,6 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 	private final Multimap<Class<?>, Runnable> afterRegisterCallbacks = HashMultimap.create();
 	private final Set<Class<?>> completedRegistrations = new HashSet<>();
 	private final String modid;
-	
-	private final NonNullLazyValue<List<Pair<String, String>>> extraLang = new NonNullLazyValue<>(() -> {
-		final List<Pair<String, String>> ret = new ArrayList<>();
-		return ret;
-	});
 	private long recipes = 0;
 	@Nullable
 	private String currentName;
@@ -110,6 +105,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 	private NonNullLazyValue<? extends ItemGroup> currentGroup;
 	private boolean skipErrors;
 	public boolean doDatagen = true;
+	private long generationStartTime = 0;
+	private long generationEndTime = 0;
 	
 	/**
 	 * Construct a new Registrate for the given mod ID.
@@ -156,9 +153,14 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 				getResourcePack().dump(Paths.get(FabricLoader.getInstance().getGameDir().toString() + "/registrarrp_asset_dump"));
 			}
 		}
+		RegistrARRP.LOGGER.info("[" + getModid() + "] runtime resource pack took [" + (generationEndTime - generationStartTime) + "] milliseconds to generate assets.");
 	}
 	
 	public RuntimeResourcePack getResourcePack() {
+		if (generationStartTime == 0) {
+			generationStartTime = System.currentTimeMillis();
+		}
+		generationEndTime = System.currentTimeMillis();
 		return resourcePack;
 	}
 	
@@ -194,7 +196,6 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 	 */
 	public void addToTag(Tag.Identified<?> tag, Identifier id) {
 		Identifier tagID;
-		List<Field> blockTags = Utils.BLOCK_TAGS;
 		if (Utils.tagInSet(tag, Utils.BLOCK_TAGS)) {
 			tagID = new Identifier("minecraft", "blocks/" + tag.getId().getPath());
 		} else if (Utils.tagInSet(tag, Utils.ITEM_TAGS)) {
@@ -221,7 +222,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 	 * Retrieves a {@link JTag} from the tag list. If no tag is found for the specified Identifier, adds one.
 	 *
 	 * @param id The Identifier of tag to get or create.
-	 * @return
+	 * @return The retrieved tag
 	 */
 	public JTag getOrCreateTag(Identifier id) {
 		if (!tags.containsKey(id)) {
