@@ -5,11 +5,17 @@ import com.tterrag.registrarrp.fabric.RegistryObject;
 import com.tterrag.registrarrp.fabric.RegistryUtil;
 import com.tterrag.registrarrp.util.nullness.NonNullSupplier;
 import com.tterrag.registrarrp.util.nullness.NonnullType;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * Wraps a {@link RegistryObject}, providing a cleaner API with null-safe access, and registrarrp-specific extensions such as {@link #getSibling(Class)}.
@@ -49,10 +55,9 @@ public class RegistryEntry<T> implements NonNullSupplier<T> {
 	 *
 	 * @param registry The registry to pull the entry from.
 	 */
-	@SuppressWarnings("unchecked")
 	public void updateReference(Registry<? super T> registry) {
 		RegistryObject<T> delegate = this.delegate;
-		Objects.requireNonNull(delegate, "Registry entry is empty").updateReference(/*(Registry<? extends T>)*/ registry);
+		Objects.requireNonNull(delegate, "Registry entry is empty").updateReference(registry);
 	}
 	
 	/**
@@ -107,25 +112,18 @@ public class RegistryEntry<T> implements NonNullSupplier<T> {
 	}
 	
 	@Override
-	@javax.annotation.Generated("lombok")
 	public boolean equals(final Object o) {
 		if (o == this) return true;
-		if (!(o instanceof RegistryEntry)) return false;
-		final RegistryEntry<?> other = (RegistryEntry<?>) o;
-		if (!other.canEqual((Object) this)) return false;
-		final Object this$delegate = this.delegate;
-		final Object other$delegate = other.delegate;
-		if (this$delegate == null ? other$delegate != null : !this$delegate.equals(other$delegate)) return false;
-		return true;
+		if (!(o instanceof final RegistryEntry<?> other)) return false;
+		if (!other.canEqual(this)) return false;
+		return Objects.equals(this.delegate, other.delegate);
 	}
 	
-	@javax.annotation.Generated("lombok")
 	protected boolean canEqual(final Object other) {
 		return other instanceof RegistryEntry;
 	}
 	
 	@Override
-	@javax.annotation.Generated("lombok")
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -134,53 +132,43 @@ public class RegistryEntry<T> implements NonNullSupplier<T> {
 		return result;
 	}
 	
-	@javax.annotation.Generated("lombok")
-	public net.minecraft.util.Identifier getId() {
+	public Identifier getId() {
 		return this.delegate.getId();
 	}
 	
-	@javax.annotation.Generated("lombok")
-	public java.util.stream.Stream<T> stream() {
+	public Stream<T> stream() {
 		return this.delegate.stream();
 	}
 	
-	@javax.annotation.Generated("lombok")
 	public boolean isPresent() {
 		return this.delegate.isPresent();
 	}
 	
-	@javax.annotation.Generated("lombok")
-	public void ifPresent(final java.util.function.Consumer<? super T> consumer) {
+	public void ifPresent(final Consumer<? super T> consumer) {
 		this.delegate.ifPresent(consumer);
 	}
 	
-	@javax.annotation.Generated("lombok")
-	public <U extends java.lang.Object> java.util.Optional<U> map(final java.util.function.Function<? super T, ? extends U> mapper) {
-		return this.delegate.<U>map(mapper);
+	public <U> Optional<U> map(final Function<? super T, ? extends U> mapper) {
+		return this.delegate.map(mapper);
 	}
 	
-	@javax.annotation.Generated("lombok")
-	public <U extends java.lang.Object> java.util.Optional<U> flatMap(final java.util.function.Function<? super T, java.util.Optional<U>> mapper) {
-		return this.delegate.<U>flatMap(mapper);
+	public <U> Optional<U> flatMap(final Function<? super T, Optional<U>> mapper) {
+		return this.delegate.flatMap(mapper);
 	}
 	
-	@javax.annotation.Generated("lombok")
-	public <U extends java.lang.Object> java.util.function.Supplier<U> lazyMap(final java.util.function.Function<? super T, ? extends U> mapper) {
-		return this.delegate.<U>lazyMap(mapper);
+	public <U> Supplier<U> lazyMap(final Function<? super T, ? extends U> mapper) {
+		return this.delegate.lazyMap(mapper);
 	}
 	
-	@javax.annotation.Generated("lombok")
 	public T orElse(final T other) {
 		return this.delegate.orElse(other);
 	}
 	
-	@javax.annotation.Generated("lombok")
-	public T orElseGet(final java.util.function.Supplier<? extends T> other) {
+	public T orElseGet(final Supplier<? extends T> other) {
 		return this.delegate.orElseGet(other);
 	}
 	
-	@javax.annotation.Generated("lombok")
-	public <X extends java.lang.Throwable> T orElseThrow(final java.util.function.Supplier<? extends X> exceptionSupplier) throws X {
+	public <X extends Throwable> T orElseThrow(final Supplier<? extends X> exceptionSupplier) throws X {
 		return this.delegate.<X>orElseThrow(exceptionSupplier);
 	}
 	

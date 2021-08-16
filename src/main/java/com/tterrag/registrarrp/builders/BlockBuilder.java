@@ -30,7 +30,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.color.block.BlockColorProvider;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.BlockItem;
@@ -60,6 +59,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 	
 	private final NonNullFunction<FabricBlockSettings, T> factory;
 	private final List<Supplier<Supplier<RenderLayer>>> renderLayers = new ArrayList<>(1);
+	private final Map<Identifier, JModel> models = new HashMap<>();
+	private final boolean wall = false;
 	private NonNullSupplier<FabricBlockSettings> initialProperties;
 	private NonNullFunction<FabricBlockSettings, FabricBlockSettings> propertiesCallback = NonNullUnaryOperator.identity();
 	@Nullable
@@ -67,8 +68,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 	@Nullable
 	private JLootTable lootTable;
 	private Pair<Identifier, JState> blockState;
-	private final Map<Identifier, JModel> models = new HashMap<>();
-	private final boolean wall = false;
 	
 	protected BlockBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<FabricBlockSettings, T> factory, NonNullSupplier<FabricBlockSettings> initialProperties) {
 		super(owner, parent, name, callback, Block.class);
@@ -263,21 +262,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 	 * @param <TE>    The type of the tile entity
 	 * @param factory A factory for the tile entity
 	 * @return this {@link BlockBuilder}
-	 * @deprecated Use {@link #simpleTileEntity(NonNullFunction)}
 	 */
-	@Deprecated
-	public <TE extends BlockEntity> BlockBuilder<T, P> simpleTileEntity(NonNullSupplier<? extends TE> factory) {
-		return tileEntity(factory).build();
-	}
-	
-	/**
-	 * Create a {@link BlockEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
-	 *
-	 * @param <TE>    The type of the tile entity
-	 * @param factory A factory for the tile entity
-	 * @return this {@link BlockBuilder}
-	 */
-	public <TE extends BlockEntity> BlockBuilder<T, P> simpleTileEntity(NonNullFunction<BlockEntityType<TE>, ? extends TE> factory) {
+	public <TE extends BlockEntity> BlockBuilder<T, P> simpleTileEntity(TileEntityBuilder.BlockEntityFactory<TE> factory) {
 		return tileEntity(factory).build();
 	}
 	
@@ -289,23 +275,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 	 * @param <TE>    The type of the tile entity
 	 * @param factory A factory for the tile entity
 	 * @return the {@link TileEntityBuilder}
-	 * @deprecated Use {@link #tileEntity(NonNullFunction)}
 	 */
-	@Deprecated
-	public <TE extends BlockEntity> TileEntityBuilder<TE, BlockBuilder<T, P>> tileEntity(NonNullSupplier<? extends TE> factory) {
-		return getOwner().<TE, BlockBuilder<T, P>>tileEntity(this, getName(), factory).validBlock(asSupplier());
-	}
-	
-	/**
-	 * Create a {@link BlockEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
-	 * <p>
-	 * The created {@link TileEntityBuilder} is returned for further configuration.
-	 *
-	 * @param <TE>    The type of the tile entity
-	 * @param factory A factory for the tile entity
-	 * @return the {@link TileEntityBuilder}
-	 */
-	public <TE extends BlockEntity> TileEntityBuilder<TE, BlockBuilder<T, P>> tileEntity(NonNullFunction<BlockEntityType<TE>, ? extends TE> factory) {
+	public <TE extends BlockEntity> TileEntityBuilder<TE, BlockBuilder<T, P>> tileEntity(TileEntityBuilder.BlockEntityFactory<TE> factory) {
 		return getOwner().tileEntity(this, getName(), factory).validBlock(asSupplier());
 	}
 	

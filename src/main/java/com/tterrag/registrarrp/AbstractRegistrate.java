@@ -2,7 +2,10 @@ package com.tterrag.registrarrp;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.*;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Table;
 import com.tterrag.registrarrp.builders.*;
 import com.tterrag.registrarrp.builders.ContainerBuilder.ContainerFactory;
 import com.tterrag.registrarrp.builders.ContainerBuilder.ForgeContainerFactory;
@@ -29,7 +32,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.ScreenHandlerProvider;
 import net.minecraft.enchantment.Enchantment;
@@ -42,14 +44,18 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.tag.*;
+import net.minecraft.tag.BlockTags;
+import net.minecraft.tag.FluidTags;
+import net.minecraft.tag.ItemTags;
+import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
@@ -81,9 +87,7 @@ import java.util.stream.Collectors;
  * For specifics as to building different registry entries, read the documentation on their respective builders.
  */
 public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
-	
-	@javax.annotation.Generated("lombok")
-	private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(AbstractRegistrate.class);
+	private static final Logger log = LogManager.getLogger(AbstractRegistrate.class);
 	private final Map<String, JLang> langs = new HashMap<>();
 	private final Map<Identifier, JTag> tags = new HashMap<>();
 	private final RuntimeResourcePack resourcePack;
@@ -98,13 +102,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 	private final Multimap<Class<?>, Runnable> afterRegisterCallbacks = HashMultimap.create();
 	private final Set<Class<?>> completedRegistrations = new HashSet<>();
 	private final String modid;
+	public boolean doDatagen = true;
 	private long recipes = 0;
 	@Nullable
 	private String currentName;
 	@Nullable
 	private NonNullLazyValue<? extends ItemGroup> currentGroup;
 	private boolean skipErrors;
-	public boolean doDatagen = true;
 	private long generationStartTime = 0;
 	private long generationEndTime = 0;
 	
@@ -196,11 +200,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 	 */
 	public void addToTag(Tag.Identified<?> tag, Identifier id) {
 		Identifier tagID;
-		if (Utils.tagInSet(tag, Utils.BLOCK_TAGS)) {
+		if (Utils.BLOCK_TAGS.contains(tag)) {
 			tagID = new Identifier("minecraft", "blocks/" + tag.getId().getPath());
-		} else if (Utils.tagInSet(tag, Utils.ITEM_TAGS)) {
+		} else if (Utils.ITEM_TAGS.contains(tag)) {
 			tagID = new Identifier("minecraft", "items/" + tag.getId().getPath());
-		} else if (Utils.tagInSet(tag, Utils.FLUID_TAGS)) {
+		} else if (Utils.FLUID_TAGS.contains(tag)) {
 			tagID = new Identifier("minecraft", "fluids/" + tag.getId().getPath());
 		} else {
 			throw new IllegalStateException("non-minecraft tag fed into AbstractRegistrate#addToTag! See the javadoc on usage!");
@@ -236,6 +240,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 	/**
 	 * For when you want to generate assets and just ship those instead of running at runtime.
 	 * See the Data section of the README for more info.
+	 *
 	 * @param value Weather data should be generated, or regular assets should be used instead.
 	 */
 	public void doDatagen(boolean value) {
@@ -663,39 +668,19 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 	}
 	
 	// Tile Entities
-	@Deprecated
-	public <T extends BlockEntity> TileEntityBuilder<T, S> tileEntity(NonNullSupplier<? extends T> factory) {
+	public <T extends BlockEntity> TileEntityBuilder<T, S> tileEntity(TileEntityBuilder.BlockEntityFactory<T> factory) {
 		return tileEntity(self(), factory);
 	}
 	
-	@Deprecated
-	public <T extends BlockEntity> TileEntityBuilder<T, S> tileEntity(String name, NonNullSupplier<? extends T> factory) {
+	public <T extends BlockEntity> TileEntityBuilder<T, S> tileEntity(String name, TileEntityBuilder.BlockEntityFactory<T> factory) {
 		return tileEntity(self(), name, factory);
 	}
 	
-	@Deprecated
-	public <T extends BlockEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, NonNullSupplier<? extends T> factory) {
+	public <T extends BlockEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, TileEntityBuilder.BlockEntityFactory<T> factory) {
 		return tileEntity(parent, currentName(), factory);
 	}
 	
-	@Deprecated
-	public <T extends BlockEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, String name, NonNullSupplier<? extends T> factory) {
-		return tileEntity(parent, name, $ -> factory.get());
-	}
-	
-	public <T extends BlockEntity> TileEntityBuilder<T, S> tileEntity(NonNullFunction<BlockEntityType<T>, ? extends T> factory) {
-		return tileEntity(self(), factory);
-	}
-	
-	public <T extends BlockEntity> TileEntityBuilder<T, S> tileEntity(String name, NonNullFunction<BlockEntityType<T>, ? extends T> factory) {
-		return tileEntity(self(), name, factory);
-	}
-	
-	public <T extends BlockEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, NonNullFunction<BlockEntityType<T>, ? extends T> factory) {
-		return tileEntity(parent, currentName(), factory);
-	}
-	
-	public <T extends BlockEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, String name, NonNullFunction<BlockEntityType<T>, ? extends T> factory) {
+	public <T extends BlockEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, String name, TileEntityBuilder.BlockEntityFactory<T> factory) {
 		return entry(name, callback -> TileEntityBuilder.create(this, parent, name, callback, factory));
 	}
 	
@@ -801,7 +786,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 	/**
 	 * @return The mod ID that this {@link AbstractRegistrate} is creating objects for
 	 */
-	@javax.annotation.Generated("lombok")
+	
 	public String getModid() {
 		return this.modid;
 	}
@@ -833,28 +818,28 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 			callbacks.add(callback);
 		}
 		
-		@javax.annotation.Generated("lombok")
+		
 		public Identifier getName() {
 			return this.name;
 		}
 		
-		@javax.annotation.Generated("lombok")
+		
 		public Class<? super R> getType() {
 			return this.type;
 		}
 		
-		@javax.annotation.Generated("lombok")
+		
 		public NonNullLazyValue<? extends T> getCreator() {
 			return this.creator;
 		}
 		
-		@javax.annotation.Generated("lombok")
+		
 		public RegistryEntry<T> getDelegate() {
 			return this.delegate;
 		}
 		
 		@Override
-		@javax.annotation.Generated("lombok")
+		
 		public boolean equals(final Object o) {
 			if (o == this) return true;
 			if (!(o instanceof AbstractRegistrate.Registration)) return false;
@@ -873,13 +858,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 			if (this$delegate == null ? other$delegate != null : !this$delegate.equals(other$delegate)) return false;
 			final Object this$callbacks = this.callbacks;
 			final Object other$callbacks = other.callbacks;
-			if (this$callbacks == null ? other$callbacks != null : !this$callbacks.equals(other$callbacks))
-				return false;
-			return true;
+			return this$callbacks == null ? other$callbacks == null : this$callbacks.equals(other$callbacks);
 		}
 		
 		@Override
-		@javax.annotation.Generated("lombok")
+		
 		public int hashCode() {
 			final int PRIME = 59;
 			int result = 1;
@@ -897,7 +880,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 		}
 		
 		@Override
-		@javax.annotation.Generated("lombok")
+		
 		public String toString() {
 			return "AbstractRegistrate.Registration(name=" + this.getName() + ", type=" + this.getType() + ", creator=" + this.getCreator() + ", delegate=" + this.getDelegate() + ", callbacks=" + this.callbacks + ")";
 		}

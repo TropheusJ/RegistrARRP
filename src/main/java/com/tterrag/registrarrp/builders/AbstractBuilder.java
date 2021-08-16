@@ -34,7 +34,7 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
 	 */
 	private final LazyRegistryEntry<T> safeSupplier = new LazyRegistryEntry<>(this);
 	
-	@javax.annotation.Generated("lombok")
+	
 	public AbstractBuilder(final AbstractRegistrate<?> owner, final P parent, final String name, final BuilderCallback callback, final Class<? super R> registryType) {
 		this.owner = owner;
 		this.parent = parent;
@@ -149,30 +149,30 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
 	}
 	
 	@Override
-	@javax.annotation.Generated("lombok")
+	
 	public AbstractRegistrate<?> getOwner() {
 		return this.owner;
 	}
 	
 	@Override
-	@javax.annotation.Generated("lombok")
+	
 	public P getParent() {
 		return this.parent;
 	}
 	
 	@Override
-	@javax.annotation.Generated("lombok")
+	
 	public String getName() {
 		return this.name;
 	}
 	
-	@javax.annotation.Generated("lombok")
+	
 	protected BuilderCallback getCallback() {
 		return this.callback;
 	}
 	
 	@Override
-	@javax.annotation.Generated("lombok")
+	
 	public Class<? super R> getRegistryType() {
 		return this.registryType;
 	}

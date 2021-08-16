@@ -5,16 +5,17 @@ import com.tterrag.registrarrp.fabric.EnvExecutor;
 import com.tterrag.registrarrp.fabric.RegistryObject;
 import com.tterrag.registrarrp.util.entry.RegistryEntry;
 import com.tterrag.registrarrp.util.entry.TileEntityEntry;
-import com.tterrag.registrarrp.util.nullness.NonNullFunction;
 import com.tterrag.registrarrp.util.nullness.NonNullSupplier;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
+import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -31,12 +32,11 @@ import java.util.function.Supplier;
  */
 public class TileEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder<BlockEntityType<?>, BlockEntityType<T>, P, TileEntityBuilder<T, P>> {
 	
-	private final NonNullFunction<BlockEntityType<T>, ? extends T> factory;
+	private final BlockEntityFactory<T> factory;
 	private final Set<NonNullSupplier<? extends Block>> validBlocks = new HashSet<>();
 	@Nullable
 	private NonNullSupplier<Function<BlockEntityRenderDispatcher, BlockEntityRenderer<? super T>>> renderer;
-	
-	protected TileEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockEntityType<T>, ? extends T> factory) {
+	protected TileEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
 		super(owner, parent, name, callback, BlockEntityType.class);
 		this.factory = factory;
 	}
@@ -55,7 +55,7 @@ public class TileEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder
 	 * @param factory  Factory to create the tile entity
 	 * @return A new {@link TileEntityBuilder} with reasonable default data generators.
 	 */
-	public static <T extends BlockEntity, P> TileEntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockEntityType<T>, ? extends T> factory) {
+	public static <T extends BlockEntity, P> TileEntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
 		return new TileEntityBuilder<>(owner, parent, name, callback, factory);
 	}
 	
@@ -105,9 +105,9 @@ public class TileEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder
 	
 	@Override
 	protected BlockEntityType<T> createEntry() {
-		NonNullFunction<BlockEntityType<T>, ? extends T> factory = this.factory;
+		BlockEntityFactory<T> factory = this.factory;
 		Supplier<BlockEntityType<T>> supplier = asSupplier();
-		return BlockEntityType.Builder.<T>create((pos, state) -> factory.apply(supplier.get()), validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
+		return BlockEntityType.Builder.create((pos, state) -> factory.create(pos, state, supplier.get()), validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
 				.build(null);
 	}
 	
@@ -119,5 +119,9 @@ public class TileEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder
 	@Override
 	public TileEntityEntry<T> register() {
 		return (TileEntityEntry<T>) super.register();
+	}
+	
+	public interface BlockEntityFactory<T extends BlockEntity> {
+		T create(BlockPos pos, BlockState state, BlockEntityType<T> type);
 	}
 }
